@@ -1,4 +1,8 @@
 version: '3.1'
+
+networks:
+  odoo:
+    
 services:
   web:
     container_name: ${WEB_HOST}
@@ -13,6 +17,8 @@ services:
       - ./addons:/mnt/extra-addons
       - ./addons-customize:/mnt/extra-addons-customize
     entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf"
+    networks:
+      - odoo
   db:
     container_name: ${DB_HOST}
     image: ${DB_IMAGE}:${DB_TAG}
@@ -25,3 +31,5 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - ./odoo_postgresdata:/var/lib/postgresql/data/pgdata
+    networks:
+      - odoo
