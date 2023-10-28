@@ -39,8 +39,7 @@ cd [NOMBRE DEL DIRECTORIO]
 docker-compose up -d
 ```
 
-5. 🌐 Accede a Odoo a través de tu navegador usando la dirección `http://localhost:[WEB_PORT]`.
+5. Accede a Odoo a través de tu navegador usando la dirección `http://localhost:[WEB_PORT]`.
 
-## 🤝 Contribuciones
 
 Las contribuciones son bienvenidas. Por favor, crea una *pull request* o informa de cualquier problema a través de la sección de *issues* del repositorio.
