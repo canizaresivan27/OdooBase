@@ -1,34 +1,22 @@
-name: Deploy with SSH
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
 jobs:
-  run_pull:
-    name: Run pull
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-    - name: Install SSH keys
+    - name: Set up SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
-        # Asegúrate de que la variable SSH_HOST esté definida
-        if [ -z "${{ secrets.SSH_HOST }}" ]; then
-          echo "Error: SSH_HOST is not set"
-          exit 1
-        fi
-        ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+        ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}  # Definido desde los secretos
 
-    - name: Connect and pull
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
-
-    - name: Cleanup
-      run: rm -rf ~/.ssh
+    - name: Deploy code via SSH
+      run: |
+        ssh -i ~/.ssh/id_rsa <usuario>@$SSH_HOST "cd <ruta/del/proyecto> && git checkout <rama> && git pull && exit"
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
