@@ -1,23 +1,26 @@
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-  
 jobs:
-  run_pull:
-    name: run pull
+  deploy:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: install ssh keys
-      # check this thread to understand why its needed:
-      # https://stackoverflow.com/a/70447517
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
       run: |
-        install -m 600 -D /dev/null ~/.ssh/id_rsa
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-    - name: connect and pull
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
-    - name: cleanup
-      run: rm -rf ~/.ssh
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        if [ -z "$SSH_HOST" ]; then
+          echo "Error: SSH_HOST is not set"
+          exit 1
+        fi
+        ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}  # Definido desde los secretos
+
+    - name: Deploy code via SSH
+      run: |
+        ssh -i ~/.ssh/id_rsa root@$SSH_HOST "cd /home/administrator/proticket && git checkout main && git pull && exit"
+      env:
+        SSH_HOST: ${{ secrets.SSH_HOST }}
