@@ -3,28 +3,25 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # Cambia a la rama que usas para despliegue
+      - main  # Cambia esto si usas otra rama
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
-      with:
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        known_hosts: ${{ secrets.KNOWN_HOSTS }}
-        name: id_rsa
-        if_key_exists: fail
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: Deploy to VPS
-      run: |
-        ssh -o StrictHostKeyChecking=no root@92.118.56.248 << EOF
-          cd /home/administrator/proticket
-          git pull origin main
-          docker-compose up -d
-        EOF
+      - name: Copy files to VPS
+        run: |
+          scp -r . ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/administrator/proticket  # Cambia la ruta según tu proyecto
+
+      - name: Deploy with Docker Compose
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /home/administrator/proticket && docker-compose down && docker-compose up -d --build"
