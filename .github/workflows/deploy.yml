@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # Puedes cambiar a la rama que usas para despliegue
+      - main  # Cambia a la rama que usas para despliegue
 
 jobs:
   deploy:
@@ -17,6 +17,9 @@ jobs:
       uses: shimataro/ssh-key-action@v2
       with:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
+        known_hosts: ${{ secrets.KNOWN_HOSTS }}
+        name: id_rsa
+        if_key_exists: fail
 
     - name: Deploy to VPS
       run: |
