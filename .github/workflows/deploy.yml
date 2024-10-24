@@ -1,14 +1,13 @@
-name: Deploy to VPS
+name: Deploy
 
 on:
   push:
     branches:
-      - main  # Cambia esto si usas otra rama
+      - main  # O la rama que utilices para desplegar
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -17,11 +16,8 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-passphrase: ${{ secrets.SSH_PASSPHRASE }}
 
-      - name: Copy files to VPS
+      - name: Deploy to server
         run: |
-          scp -r . ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/administrator/proticket  # Cambia la ruta según tu proyecto
-
-      - name: Deploy with Docker Compose
-        run: |
-          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /home/administrator/proticket && docker-compose down && docker-compose up -d --build"
+          ssh root@92.118.56.248 'cd /home/administrator/proticket && docker-compose up -d'
